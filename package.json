@@ -1,0 +1,18 @@
+{
+  "name": "hostess",
+  "version": "0.0.0",
+  "description": "async by depencency",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test.js --reporter nyan"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:ifit/hostess.git"
+  },
+  "keywords": [
+    "async"
+  ],
+  "author": "Adam Blackburn",
+  "license": "MIT"
+}
