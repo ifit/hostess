@@ -12,7 +12,6 @@ function hostess() {
 }
 
 function Hostess() {
-  this._done = {};
   this._queue = {};
   events.EventEmitter.call(this);
 }
@@ -23,6 +22,8 @@ Hostess.prototype.host = function(name, deps, callback) {
     return this.on('error', deps);
   } else if (name === 'done') {
     return this.on('done', deps);
+  } else if (name === 'set') {
+    return this[deps] = callback;
   }
 
   if (typeof deps === 'function') {
@@ -37,6 +38,8 @@ Hostess.prototype.queue = function(name, deps, callback) {
   if (this._queue[name]) return;
   this._queue[name] = {
     deps: deps,
+    called: false,
+    done: false,
     callback: callback
   }
 }
@@ -44,15 +47,28 @@ Hostess.prototype.queue = function(name, deps, callback) {
 Hostess.prototype.depsMet = function(deps) {
   var met = 0;
   for (var i = 0; i < deps.length; ++i) {
-    if (this._done[deps[i]]) ++met;
+    if (this._queue[deps[i]] && this._queue[deps[i]].done) ++met;
   }
   return met === deps.length;
 }
 
 Hostess.prototype.exec = function(name) {
+  var self = this;
   var item = this._queue[name];
   if (!item.callback) return;
+  if (item.called) return;
   if (!this.depsMet(item.deps)) return;
+
+  if (this.debug) {
+    setTimeout(function() {
+      if (self._queue[name].done) return;
+      console.log(name + ' timed out');
+    }, this.timeout || 500);
+
+    console.log('calling ' + name);
+  }
+
+  item.called = true;
 
   if (item.callback.length > 0) {
     // async
@@ -71,9 +87,8 @@ Hostess.prototype.exec = function(name) {
 Hostess.prototype.finish = function(name) {
   var self = this;
   return function(err) {
+    self._queue[name].done = true;
     if (err) return self.emit('error', err);
-    self._queue[name] = {};
-    self._done[name] = true;
     self.checkAllForReady();
   }
 }
@@ -81,7 +96,7 @@ Hostess.prototype.finish = function(name) {
 Hostess.prototype.checkAllForReady = function() {
   var count = 0;
   for (var name in this._queue) {
-    if (!this._done[name]) ++count;
+    if (!this._queue[name].done) ++count;
     this.exec(name);
   }
   if (count === 0) {

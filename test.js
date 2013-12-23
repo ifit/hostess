@@ -146,7 +146,7 @@ describe('host some functions async', function() {
 
     host('queen', ['rook'], function(next) { process.nextTick(next); });
     host('rook', ['bishop', 'knight'], function(next) { process.nextTick(next); });
-    host('bishop', ['pawn'], function(next) { process.nextTick(next); });
+    host('bishop', ['pawn'], function() {});
     host('knight', ['pawn'], function(next) { process.nextTick(next); });
     host('pawn', function(next) { process.nextTick(next); });
 

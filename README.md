@@ -70,19 +70,45 @@ host('bad', function(next) {
 var hostess = require('hostess')
   , host = hostess()
 
-host('done', function() {
-  // nothing left in the queue
-});
-
 host('no deps', function() {
   // done will be fired after this
+  setTimeout(next, 100);
 });
 
 host('cookies', ['milk'], function() {
   // done will be fired after this
 });
 
-host('milk', function() {
+host('milk', function(next) {
   // won't fire done
+  setTimeout(next, 100);
 });
+
+host('done', function() {
+  // will be called when there is nothing in the queue
+});
+```
+
+## Debugging
+
+```javascript
+var hostess = require('hostess')
+  , host = hostess()
+
+host('set', 'debug', true);
+host('set', 'timeout', 1000); // defaults to 500ms
+
+host('dep', function(next) {
+  setTimeout(next, 500);
+});
+
+host('buggy', [ 'dep' ], function(next) {
+  // forgot to call next();
+});
+
+/* Outputs:
+calling dep
+calling buggy
+buggy timed out
+*/
 ```
