@@ -197,6 +197,31 @@ describe('hostess handlers', function() {
     });
   });
 
+  it('should only handle the first error thrown', function(done) {
+    var host = hostess();
+
+    host('error', function(err) {
+      assert.equal(err.message, 'first');
+    });
+
+    host('first', function(next) {
+      setTimeout(function() {
+        next(new Error('first'));
+      }, 20);
+    });
+
+    host('second', function(next) {
+      setTimeout(function() {
+        next(new Error('second'));
+      }, 30);
+    });
+
+    setTimeout(function() {
+      assert.ok(true);
+      done();
+    }, 40);
+  });
+
   it('should fire a done event', function(done) {
     var host = hostess();
     var secondRun = false;

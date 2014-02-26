@@ -18,8 +18,12 @@ function Hostess() {
 util.inherits(Hostess, events.EventEmitter);
 
 Hostess.prototype.host = function(name, deps, callback) {
+  var self = this;
   if (name === 'error') {
-    return this.on('error', deps);
+    return this.once('error', function() {
+      self.on('error', function() { });
+      deps.apply(this, arguments);
+    });
   } else if (name === 'done') {
     return this.on('done', deps);
   } else if (name === 'set') {
