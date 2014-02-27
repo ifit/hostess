@@ -222,6 +222,28 @@ describe('hostess handlers', function() {
     }, 40);
   });
 
+  it('should stop after an exception is thrown', function(done) {
+    var host = hostess();
+
+    host('error', function() { });
+
+    host('first', function() {
+      throw new Error();
+    });
+
+    var secondCalled = false;
+    host('second', ['first'], function() {
+      secondCalled = true;
+    });
+
+    process.nextTick(function() {
+      if (secondCalled) {
+        assert.ok(false, 'execution didnt stop after exception was thrown');
+      }
+      done();
+    });
+  });
+
   it('should fire a done event', function(done) {
     var host = hostess();
     var secondRun = false;
