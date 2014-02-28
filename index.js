@@ -21,6 +21,7 @@ Hostess.prototype.host = function(name, deps, callback) {
   var self = this;
   if (name === 'error') {
     return this.once('error', function() {
+      self.halt = true;
       self.on('error', function() { });
       deps.apply(this, arguments);
     });
@@ -59,6 +60,7 @@ Hostess.prototype.depsMet = function(deps) {
 Hostess.prototype.exec = function(name) {
   var self = this;
   var item = this._queue[name];
+  if (this.halt) return;
   if (!item.callback) return;
   if (item.called) return;
   if (!this.depsMet(item.deps)) return;
